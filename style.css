@@ -1,0 +1,30 @@
+body {
+  margin: 0;
+  background-color: #1e1e1e;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+#menu {
+  padding: 20px;
+}
+button {
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 18px;
+  cursor: pointer;
+}
+canvas {
+  display: none;
+  background-color: #000;
+  margin: 0 auto;
+  display: block;
+  border: 2px solid #fff;
+}
+#ui {
+  display: none;
+  padding: 10px;
+}
+.hidden {
+  display: none;
+}
