@@ -1,124 +1,120 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const menu = document.getElementById('menu');
-const ui = document.getElementById('ui');
-const statusText = document.getElementById('status');
-const gameOverDiv = document.getElementById('gameOver');
-const gameOverText = document.getElementById('gameOverText');
+const bgm = document.getElementById('bgm');
+const attackSound = document.getElementById('attackSound');
 
-let player, enemies = [];
-let level = 1;
-let lives = 2;
-let keys = {};
+let player = { class: '', x: 50, y: 200, hp: 100, maxHp: 100, lives: 2, xp: 0, level: 1, spriteFrame: 0 };
+let enemies = [];
 let gameRunning = false;
+let dialogueIndex = 0;
+let dialogues = [
+  "Welcome, traveler, to the multiverse arena.",
+  "Choose your path: Mage, Warrior, or Archer.",
+  "Survive 10 waves of enemies to prove your worth!"
+];
 
-class Player {
-  constructor(x, y, color) {
-    this.x = x;
-    this.y = y;
-    this.size = 30;
-    this.color = color;
-    this.speed = 4;
-  }
-  draw() {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.size, this.size);
-  }
-  move() {
-    if (keys['ArrowUp']) this.y -= this.speed;
-    if (keys['ArrowDown']) this.y += this.speed;
-    if (keys['ArrowLeft']) this.x -= this.speed;
-    if (keys['ArrowRight']) this.x += this.speed;
-    this.x = Math.max(0, Math.min(canvas.width - this.size, this.x));
-    this.y = Math.max(0, Math.min(canvas.height - this.size, this.y));
+// Placeholder images
+let playerImg = new Image();
+playerImg.src = 'assets/player.png';
+let enemyImg = new Image();
+enemyImg.src = 'assets/enemy.png';
+
+function startGame() {
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('class-selection').classList.remove('hidden');
+}
+
+function chooseClass(cls) {
+  player.class = cls;
+  document.getElementById('playerClass').innerText = cls;
+  document.getElementById('class-selection').classList.add('hidden');
+  document.getElementById('dialogue').classList.remove('hidden');
+  document.getElementById('dialogueText').innerText = dialogues[0];
+  bgm.play();
+}
+
+function nextDialogue() {
+  dialogueIndex++;
+  if (dialogueIndex < dialogues.length) {
+    document.getElementById('dialogueText').innerText = dialogues[dialogueIndex];
+  } else {
+    document.getElementById('dialogue').classList.add('hidden');
+    document.getElementById('gameCanvas').classList.remove('hidden');
+    document.getElementById('hud').classList.remove('hidden');
+    startLevel(1);
   }
 }
 
-class Enemy {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.size = 25;
-    this.color = 'red';
-    this.speed = 2;
+function startLevel(level) {
+  player.level = level;
+  document.getElementById('level').innerText = level;
+  enemies = [];
+  for (let i = 0; i < level; i++) {
+    enemies.push({ x: 700 - i * 60, y: 200, hp: 30, maxHp: 30, spriteFrame: 0 });
   }
-  draw() {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.size, this.size);
-  }
-  move() {
-    if (player.x > this.x) this.x += this.speed;
-    if (player.x < this.x) this.x -= this.speed;
-    if (player.y > this.y) this.y += this.speed;
-    if (player.y < this.y) this.y -= this.speed;
-  }
-}
-
-function startGame(classType) {
-  menu.style.display = 'none';
-  canvas.style.display = 'block';
-  ui.style.display = 'block';
-  player = new Player(400, 300, classType === 'mage' ? 'blue' : classType === 'archer' ? 'green' : 'white');
-  level = 1;
-  lives = 2;
-  spawnEnemies(level);
   gameRunning = true;
   gameLoop();
-}
-
-function spawnEnemies(num) {
-  enemies = [];
-  for (let i = 0; i < num; i++) {
-    let ex = Math.random() * (canvas.width - 25);
-    let ey = Math.random() * (canvas.height - 25);
-    enemies.push(new Enemy(ex, ey));
-  }
-}
-
-function checkCollisions() {
-  for (let e of enemies) {
-    if (player.x < e.x + e.size &&
-        player.x + player.size > e.x &&
-        player.y < e.y + e.size &&
-        player.y + player.size > e.y) {
-      lives -= 1;
-      if (lives <= 0) {
-        endGame(false);
-      } else {
-        player.x = 400;
-        player.y = 300;
-      }
-    }
-  }
 }
 
 function gameLoop() {
   if (!gameRunning) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  player.move();
-  player.draw();
-  for (let e of enemies) {
-    e.move();
-    e.draw();
-  }
-  checkCollisions();
-  if (enemies.length === 0) {
-    level++;
-    if (level > 10) {
-      endGame(true);
-      return;
-    }
-    spawnEnemies(level);
-  }
-  statusText.textContent = `Level: ${level} | Lives: ${lives}`;
+
+  // Draw player
+  ctx.drawImage(playerImg, player.spriteFrame * 32, 0, 32, 32, player.x, player.y, 32, 32);
+  player.spriteFrame = (player.spriteFrame + 1) % 4;
+
+  // Draw enemies
+  enemies.forEach(enemy => {
+    ctx.drawImage(enemyImg, enemy.spriteFrame * 32, 0, 32, 32, enemy.x, enemy.y, 32, 32);
+    enemy.spriteFrame = (enemy.spriteFrame + 1) % 4;
+    ctx.fillStyle = 'lime';
+    ctx.fillRect(enemy.x, enemy.y - 10, (enemy.hp / enemy.maxHp) * 32, 5);
+  });
+
   requestAnimationFrame(gameLoop);
 }
 
-function endGame(won) {
-  gameRunning = false;
-  gameOverDiv.classList.remove('hidden');
-  gameOverText.textContent = won ? 'You Win!' : 'Game Over';
+document.addEventListener('keydown', (e) => {
+  if (!gameRunning) return;
+  if (e.key === 'ArrowUp') player.y -= 10;
+  if (e.key === 'ArrowDown') player.y += 10;
+  if (e.key === ' ') attack();
+});
+
+function attack() {
+  attackSound.play();
+  enemies.forEach(enemy => {
+    let damage = 10;
+    if (player.class === 'Mage') damage = 15;
+    if (player.class === 'Archer') damage = 12;
+    enemy.hp -= damage;
+  });
+  enemies = enemies.filter(enemy => enemy.hp > 0);
+
+  if (enemies.length === 0) {
+    player.xp += 10;
+    document.getElementById('xp').innerText = player.xp;
+    if (player.level < 10) {
+      startLevel(player.level + 1);
+    } else {
+      endGame(true);
+    }
+  }
 }
 
-document.addEventListener('keydown', (e) => keys[e.key] = true);
-document.addEventListener('keyup', (e) => keys[e.key] = false);
+function endGame(win) {
+  gameRunning = false;
+  bgm.pause();
+  document.getElementById('gameCanvas').classList.add('hidden');
+  document.getElementById('hud').classList.add('hidden');
+  document.getElementById('game-over').classList.remove('hidden');
+  document.getElementById('gameResult').innerText = win ? 'You Win!' : 'Game Over!';
+}
+
+function restartGame() {
+  player = { class: '', x: 50, y: 200, hp: 100, maxHp: 100, lives: 2, xp: 0, level: 1, spriteFrame: 0 };
+  dialogueIndex = 0;
+  document.getElementById('game-over').classList.add('hidden');
+  document.getElementById('menu').classList.remove('hidden');
+}
