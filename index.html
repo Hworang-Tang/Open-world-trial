@@ -3,25 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Open World VN Game</title>
+  <title>Open World VN Game V3</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="menu">
-    <h1>Open World VN Game</h1>
-    <p>Select your class:</p>
-    <button onclick="startGame('warrior')">Warrior</button>
-    <button onclick="startGame('mage')">Mage</button>
-    <button onclick="startGame('archer')">Archer</button>
+    <h1>Welcome to the Multiverse Arena</h1>
+    <button onclick="startGame()">Start Game</button>
   </div>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="ui">
-    <p id="status">Level: 1 | Lives: 2</p>
+
+  <div id="class-selection" class="hidden">
+    <h2>Choose Your Class</h2>
+    <button onclick="chooseClass('Mage')">Mage</button>
+    <button onclick="chooseClass('Warrior')">Warrior</button>
+    <button onclick="chooseClass('Archer')">Archer</button>
   </div>
-  <div id="gameOver" class="hidden">
-    <h2 id="gameOverText"></h2>
-    <button onclick="location.reload()">Restart</button>
+
+  <canvas id="gameCanvas" width="800" height="400" class="hidden"></canvas>
+
+  <div id="hud" class="hidden">
+    <p>Class: <span id="playerClass"></span></p>
+    <p>Level: <span id="level">1</span></p>
+    <p>Lives: <span id="lives">2</span></p>
+    <p>XP: <span id="xp">0</span></p>
+    <div id="player-health-bar"><div id="player-health"></div></div>
   </div>
+
+  <div id="dialogue" class="hidden">
+    <p id="dialogueText"></p>
+    <button id="dialogueNext" onclick="nextDialogue()">Next</button>
+  </div>
+
+  <div id="game-over" class="hidden">
+    <h2 id="gameResult"></h2>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <audio id="bgm" src="assets/bgm.mp3" loop></audio>
+  <audio id="attackSound" src="assets/attack.mp3"></audio>
+
   <script src="main.js"></script>
 </body>
 </html>
